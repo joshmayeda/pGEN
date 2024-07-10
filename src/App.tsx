@@ -121,7 +121,7 @@ const App: React.FC = () => {
 
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [clickedCard, setClickedCard] = useState<Card>();
-  const [allCards, setAllCards] = useState<Card[]>(testCards);
+  const [allCards, setAllCards] = useState<Card[]>([]);
   const [chunkedCards, setChunkedCards] = useState<Card[][]>(chunkArray(allCards, 10));
   const [cardExists, setCardExists] = useState<boolean>(false);
   const [previousCardName, setPreviousCardName] = useState<string>("");
