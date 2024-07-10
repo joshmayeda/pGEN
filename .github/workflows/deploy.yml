@@ -37,6 +37,5 @@ jobs:
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           
           sudo cp -r /home/ubuntu/app/* /var/www/html/
-
           sudo systemctl restart nginx
         EOF
