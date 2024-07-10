@@ -35,7 +35,7 @@ jobs:
     - name: SSH into EC2 and update Nginx configuration
       run: |
         ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-          # Copy the build files to the Nginx web root
+          
           sudo cp -r /home/ubuntu/app/* /var/www/html/
           
           # Restart Nginx to apply changes
