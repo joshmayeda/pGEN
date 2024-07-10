@@ -74,7 +74,7 @@ const AutoCombobox: React.FC<AutoComboboxProps> = ({ selectedCard, setSelectedCa
         onChange={(event) => setQuery(event.target.value)}
         autoComplete='off'
         placeholder='Search for a card...'
-        style={{ padding: '0.5rem' }}
+        style={{ padding: '0.5rem', borderRadius: '0.5rem' }}
       />
       <ComboboxOptions anchor="bottom" className="empty:hidden">
         {filteredCards.map((card) => (
