@@ -73,7 +73,7 @@ const AutoCombobox: React.FC<AutoComboboxProps> = ({ selectedCard, setSelectedCa
         onKeyDown={handleQueryChange}
         onChange={(event) => setQuery(event.target.value)}
         autoComplete='off'
-        placeholder='Searc test test'
+        placeholder='Search for a card...'
         style={{ padding: '0.5rem', borderRadius: '0.5rem' }}
       />
       <ComboboxOptions anchor="bottom" className="empty:hidden">

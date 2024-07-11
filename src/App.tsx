@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import AutoCombobox from './Components/AutoCombobox';
 import { Card } from './Components/Card';
 import CardModal from './Components/CardModal';
+import LoadingModal from './Components/LoadingModal';
+// import { PiPrinter } from "react-icons/pi";
+import { BsDownload } from "react-icons/bs";
 
 
 const App: React.FC = () => {
@@ -127,6 +130,7 @@ const App: React.FC = () => {
   const [previousCardName, setPreviousCardName] = useState<string>("");
   const [cardNotFound, setCardNotFound] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
   function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const result = [];
@@ -178,7 +182,8 @@ const App: React.FC = () => {
     updateCardAmount(card, newAmount);
   }
 
-  const generatePDF = async () => {
+  const downloadPDF = async () => {
+    setIsGenerating(true);
     try {
       const response = await fetch('http://localhost:5000/generate-pdf', {
         method: 'POST',
@@ -208,15 +213,65 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
+    } finally {
+      setIsGenerating(false);
     }
   };
+
+  // const printPDF = async () => {
+  //   setIsGenerating(true);
+  //   try {
+  //     const response = await fetch('http://localhost:5000/generate-pdf', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         allCards,
+  //         margins: {
+  //           top: 0.5,
+  //           left: 0.5,
+  //         },
+  //       }),
+  //     });
+  //     if (response.ok) {
+  //       const blob = await response.blob();
+  //       const url = URL.createObjectURL(blob);
+  //       const iframe = document.createElement('iframe');
+  //       iframe.style.position = 'absolute';
+  //       iframe.style.right = '100%';
+  //       iframe.src = url;
+  //       document.body.appendChild(iframe);
   
+  //       iframe.onload = () => {
+  //         if (iframe.contentWindow) {
+  //           iframe.contentWindow.print();
+  //         }
+  //         document.body.removeChild(iframe); // Clean up
+  //         URL.revokeObjectURL(url);
+  //       };
+  //     } else {
+  //       console.error('Error generating PDF:', response.statusText);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error generating PDF:', error);
+  //   } finally {
+  //     setIsGenerating(false);
+  //   }
+  // };
+  
+
 
   return (
   <div className="flex flex-col items-center justify-center h-screen gap-6 mx-auto">
     <div className="title-container relative flex items-center justify-center w-5/6">
       <h1 className="text-2xl font-bold">Magic: The Gathering Proxy Generator</h1>
-      <button className="btn btn-primary absolute right-0" onClick={generatePDF} >Generate PDF</button>
+      <button className="absolute right-0" onClick={downloadPDF} >
+        <BsDownload />
+      </button>
+      {/* <button className="absolute right-16" onClick={printPDF} >
+        <PiPrinter />
+      </button> */}
     </div>
     <AutoCombobox
       selectedCard={selectedCard}
@@ -288,6 +343,9 @@ const App: React.FC = () => {
         closeCardModal={closeCardModal}
       />
     }
+    { isGenerating && (
+      <LoadingModal loadingModalOpen={isGenerating} closeLoadingModal={() => setIsGenerating(false)} />
+    )}
     <canvas id="canvas" style={{ display: 'none' }}></canvas>
   </div>
 
