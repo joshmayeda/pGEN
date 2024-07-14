@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AutoCombobox from './Components/AutoCombobox';
 import { Card } from './Components/Card';
 import CardModal from './Components/CardModal';
 import LoadingModal from './Components/LoadingModal';
-// import { PiPrinter } from "react-icons/pi";
+import { PiPrinter } from "react-icons/pi";
 import { BsDownload } from "react-icons/bs";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 
 const App: React.FC = () => {
@@ -122,6 +123,9 @@ const App: React.FC = () => {
     amount: 4,
   };
 
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [clickedCard, setClickedCard] = useState<Card>();
   const [allCards, setAllCards] = useState<Card[]>([]);
@@ -131,6 +135,8 @@ const App: React.FC = () => {
   const [cardNotFound, setCardNotFound] = useState<boolean>(false);
   const [cardModalOpen, setCardModalOpen] = useState<boolean>(false);
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('accessToken'));
+  const [uploadSuccessful, setUploadSuccessful] = useState<boolean>(false);
 
   function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const result = [];
@@ -218,49 +224,90 @@ const App: React.FC = () => {
     }
   };
 
-  // const printPDF = async () => {
-  //   setIsGenerating(true);
-  //   try {
-  //     const response = await fetch('http://localhost:5000/generate-pdf', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         allCards,
-  //         margins: {
-  //           top: 0.5,
-  //           left: 0.5,
-  //         },
-  //       }),
-  //     });
-  //     if (response.ok) {
-  //       const blob = await response.blob();
-  //       const url = URL.createObjectURL(blob);
-  //       const iframe = document.createElement('iframe');
-  //       iframe.style.position = 'absolute';
-  //       iframe.style.right = '100%';
-  //       iframe.src = url;
-  //       document.body.appendChild(iframe);
+  const toGoogleDrive = async () => {
+    setIsGenerating(true);
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const accessRefreshToken = localStorage.getItem('refreshToken');
+      if (!accessToken || !accessRefreshToken) {
+        authorize();
+        return;
+      }
   
-  //       iframe.onload = () => {
-  //         if (iframe.contentWindow) {
-  //           iframe.contentWindow.print();
-  //         }
-  //         document.body.removeChild(iframe); // Clean up
-  //         URL.revokeObjectURL(url);
-  //       };
-  //     } else {
-  //       console.error('Error generating PDF:', response.statusText);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error generating PDF:', error);
-  //   } finally {
-  //     setIsGenerating(false);
-  //   }
-  // };
+      const payload = {
+        allCards,
+        token: accessToken,
+        refreshToken: accessRefreshToken,
+        margins: {
+          top: 0.5,
+          left: 0.5,
+        },
+      };
   
+      console.log('Payload being sent:', payload);
+  
+      const response = await fetch('http://localhost:5000/upload-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (response.ok) {
+        const data = await response.json();
+        setUploadSuccessful(true);
+        console.log('PDF uploaded to Google Drive successfully, File ID:', data.fileId);
+      } else {
+        const errorText = await response.text();
+        console.error('Error uploading PDF:', response.statusText, errorText);
+      }
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
+  const authorize = () => {
+    const clientId = import.meta.env.VITE_GCP_CLIENT_ID;
+    const redirectUri = import.meta.env.VITE_GCP_REDIRECT_URI;
+    const scope = import.meta.env.VITE_GCP_REQUESTED_SCOPES;
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&access_type=offline`;
+    
+    window.location.href = authUrl;
+  };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      const fetchTokens = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/oauth2callback', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code }),
+          });
+
+          const data = await response.json();
+          console.log('Tokens:', data);
+          localStorage.setItem('accessToken', data.access_token);
+          localStorage.setItem('refreshToken', data.refresh_token);
+          setIsAuthenticated(true);
+          navigate('/');
+        } catch (error) {
+          console.error('Error fetching tokens:', error);
+        }
+      };
+
+      fetchTokens();
+    }
+  }, [location.search, navigate]);
+  
 
   return (
   <div className="flex flex-col items-center justify-center h-screen gap-6 mx-auto">
@@ -269,9 +316,9 @@ const App: React.FC = () => {
       <button className="absolute right-0" onClick={downloadPDF} >
         <BsDownload />
       </button>
-      {/* <button className="absolute right-16" onClick={printPDF} >
+      <button className="absolute right-16" onClick={isAuthenticated ? toGoogleDrive : authorize} >
         <PiPrinter />
-      </button> */}
+      </button>
     </div>
     <AutoCombobox
       selectedCard={selectedCard}
@@ -345,6 +392,22 @@ const App: React.FC = () => {
     }
     { isGenerating && (
       <LoadingModal loadingModalOpen={isGenerating} closeLoadingModal={() => setIsGenerating(false)} />
+    )}
+    { uploadSuccessful && (
+      <div role="alert" className="alert alert-success fixed bottom-10 right-10 w-1/6">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-6 w-6 shrink-0 stroke-current"
+        fill="none"
+        viewBox="0 0 24 24">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <span>Upload to Google Drive successful!</span>
+      </div>
     )}
     <canvas id="canvas" style={{ display: 'none' }}></canvas>
   </div>
