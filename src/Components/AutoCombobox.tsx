@@ -13,6 +13,8 @@ const ddbClient = new DynamoDBClient({
     secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY || '',
   }
 });
+console.log('AWS Access Key:', import.meta.env.AWS_ACCESS_KEY_ID);
+console.log('AWS Secret Key:', import.meta.env.AWS_SECRET_ACCESS_KEY);
 const ddbDocClient = DynamoDBDocumentClient.from(ddbClient);
 
 type AutoComboboxProps = {
