@@ -5,6 +5,43 @@
     <link rel="icon" type="image/svg+xml" href="/32-326740_magic-the-gathering-mana-symbols.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Magic: The Gathering Proxy Generator</title>
+    <script>
+      window.addEventListener('beforeunload', (event) => {
+        // Clear cache
+        clearCache();
+  
+        // Optionally, send a request to the server to clear the session
+        navigator.sendBeacon('/clear-session');
+  
+        // Optionally, show a confirmation dialog to the user
+        // event.preventDefault();
+        // event.returnValue = '';
+      });
+  
+      function clearCache() {
+        // Clear localStorage
+        localStorage.clear();
+  
+        // Clear sessionStorage
+        sessionStorage.clear();
+  
+        // Clear cookies
+        document.cookie.split(';').forEach((cookie) => {
+          const eqPos = cookie.indexOf('=');
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+        });
+  
+        // Unregister service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
