@@ -23,6 +23,14 @@ jobs:
       with:
         node-version: '20.x'
 
+    - name: Create .env file
+      run: |
+        rm -f .env
+        echo "VITE_GCP_CLIENT_ID=${{ secrets.VITE_GCP_CLIENT_ID }}" >> .env
+        echo "VITE_GCP_CLIENT_SECRET=${{ secrets.VITE_GCP_CLIENT_SECRET }}" >> .env
+        echo "VITE_GCP_REDIRECT_URI=${{ secrets.VITE_GCP_REDIRECT_URI }}" >> .env
+        echo "VITE_GCP_REQUESTED_SCOPES=${{ secrets.VITE_GCP_REQUESTED_SCOPES }}" >> .env
+
     - name: Install dependencies and build
       run: |
         npm install
