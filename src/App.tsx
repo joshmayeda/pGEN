@@ -192,7 +192,7 @@ const App: React.FC = () => {
   const downloadPDF = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch(`${baseURI}/generate-pdf`, {
+      const response = await fetch(`http://localhost:5000/generate-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -286,7 +286,7 @@ const App: React.FC = () => {
     if (code) {
       const fetchTokens = async () => {
         try {
-          const response = await fetch(`${baseURI}/oauth2callback`, {
+          const response = await fetch(`http://localhost:5000/oauth2callback`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
