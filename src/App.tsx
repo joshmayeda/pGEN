@@ -123,6 +123,7 @@ const App: React.FC = () => {
     amount: 4,
   };
 
+  const baseURI = import.meta.env.VITE_BASE_URI;
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -191,7 +192,7 @@ const App: React.FC = () => {
   const downloadPDF = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch('http://localhost:5000/generate-pdf', {
+      const response = await fetch(`${baseURI}/generate-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -246,7 +247,7 @@ const App: React.FC = () => {
   
       console.log('Payload being sent:', payload);
   
-      const response = await fetch('http://localhost:5000/upload-pdf', {
+      const response = await fetch(`${baseURI}/upload-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -285,7 +286,7 @@ const App: React.FC = () => {
     if (code) {
       const fetchTokens = async () => {
         try {
-          const response = await fetch('http://localhost:5000/oauth2callback', {
+          const response = await fetch(`${baseURI}/oauth2callback`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -306,7 +307,7 @@ const App: React.FC = () => {
 
       fetchTokens();
     }
-  }, [location.search, navigate]);
+  }, [location.search, navigate, baseURI]);
   
 
   return (
