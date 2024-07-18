@@ -123,7 +123,7 @@ const App: React.FC = () => {
     amount: 4,
   };
 
-  const baseURI = import.meta.env.VITE_BASE_URI;
+  const baseURI = import.meta.env.VITE_BASE_URL;
   const navigate = useNavigate();
   const location = useLocation();
 
