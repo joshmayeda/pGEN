@@ -192,7 +192,7 @@ const App: React.FC = () => {
   const downloadPDF = async () => {
     setIsGenerating(true);
     try {
-      const response = await fetch(`http://localhost:5000/generate-pdf`, {
+      const response = await fetch(`${baseURI}/generate-pdf`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
